@@ -168,14 +168,14 @@ if show_logo and os.path.exists(logo_path):
 
     with col2:
         st.markdown("""
-        ## Positive Childhood Alliance North California
+        ## Positive Childhood Alliance North Carolina
         ### AI ATS Resume Screening Dashboard
         """)
 
 else:
 
     st.markdown("""
-    ## Positive Childhood Alliance North California
+    ## Positive Childhood Alliance North Carolina
     ### AI ATS Resume Screening Dashboard
     """)
 
