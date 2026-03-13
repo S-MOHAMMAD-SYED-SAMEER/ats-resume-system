@@ -218,27 +218,6 @@ Best regards,
 HR Team"""
 )
 
-# ---------------- EMAIL FUNCTION ----------------
-
-def send_email(receiver_email, subject, body):
-
-    try:
-
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = sender_email
-        msg["To"] = receiver_email
-
-        with smtplib.SMTP_SSL("smtp.gmail.com",465) as server:
-            server.login(sender_email,sender_password)
-            server.send_message(msg)
-
-        return True
-
-    except Exception as e:
-        st.error(f"Email error: {e}")
-        return False
-
 # ---------------- TEXT EXTRACTION ----------------
 
 def extract_text(file):
@@ -470,6 +449,26 @@ if "results" in st.session_state:
             st.write("Experience:",row["Experience"])
             st.write("Matched Skills:",row["Matched Skills"])
 
+# ---------------- EMAIL FUNCTION ----------------
+
+def send_email(receiver_email, subject, body):
+
+    try:
+
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+
+        with smtplib.SMTP_SSL("smtp.gmail.com",465) as server:
+            server.login(sender_email,sender_password)
+            server.send_message(msg)
+
+        return True
+
+    except Exception as e:
+        st.error(f"Email error: {e}")
+        return False
 # ---------------- EMAIL SECTION (AT END) ----------------
 
 st.subheader("Send Candidate Email Notifications")
