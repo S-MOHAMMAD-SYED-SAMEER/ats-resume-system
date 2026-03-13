@@ -317,24 +317,36 @@ def clean_words(text):
     return words
 
 
-def analyze_resume(resume_text,job_description):
+def analyze_resume(resume_text, job_description):
 
-    docs = [job_description,resume_text]
+    # ---------- Semantic Similarity ----------
+    docs = [job_description, resume_text]
 
     vectorizer = TfidfVectorizer()
 
     tfidf = vectorizer.fit_transform(docs)
 
-    similarity = cosine_similarity(tfidf[0:1],tfidf[1:2])
+    similarity = cosine_similarity(tfidf[0:1], tfidf[1:2])
 
-    score = int(similarity[0][0]*100)
+    semantic_score = similarity[0][0] * 100
 
+
+    # ---------- Keyword Matching ----------
     jd_words = set(clean_words(job_description))
     resume_words = set(clean_words(resume_text))
 
-    matched = list(jd_words.intersection(resume_words))[:10]
+    matched = list(jd_words.intersection(resume_words))
 
-    return score,matched
+    if len(jd_words) == 0:
+        keyword_score = 0
+    else:
+        keyword_score = (len(matched) / len(jd_words)) * 100
+
+
+    # ---------- Final Combined Score ----------
+    score = int((semantic_score * 0.5) + (keyword_score * 0.5))
+
+    return score, matched[:10]
 
 # ---------------- REPORT ----------------
 
