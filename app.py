@@ -7,6 +7,8 @@ import docx
 import os
 from fpdf import FPDF
 from PyPDF2 import PdfMerger
+import smtplib
+from email.mime.text import MIMEText
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -88,7 +90,6 @@ if st.session_state.role == "admin":
 
     selected_user = st.sidebar.selectbox("Select User", user_list)
 
-    # Change Password
     new_password = st.sidebar.text_input("New Password")
 
     if st.sidebar.button("Update Password"):
@@ -100,7 +101,6 @@ if st.session_state.role == "admin":
 
         st.sidebar.success("Password Updated")
 
-    # Change Username
     new_username = st.sidebar.text_input("New Username")
 
     if st.sidebar.button("Change Username"):
@@ -117,7 +117,6 @@ if st.session_state.role == "admin":
         else:
             st.sidebar.error("Username already exists")
 
-    # Add User
     st.sidebar.markdown("### Add New User")
 
     add_user = st.sidebar.text_input("Username ")
@@ -143,7 +142,6 @@ if st.session_state.role == "admin":
         else:
             st.sidebar.error("User already exists")
 
-    # Delete User
     if st.sidebar.button("Delete User"):
 
         if selected_user != "admin":
@@ -190,6 +188,60 @@ uploaded_files = st.file_uploader(
 )
 
 threshold = st.slider("Shortlist Threshold (%)",0,100,60)
+
+# ---------------- EMAIL SETTINGS (NEW) ----------------
+
+st.subheader("Email Notification Settings")
+
+sender_email = st.text_input("Sender Email")
+sender_password = st.text_input("Email App Password", type="password")
+
+shortlist_subject = st.text_input("Shortlist Email Subject","Interview Shortlist Notification")
+
+shortlist_body = st.text_area(
+"Shortlist Email Message",
+"""Hello {name},
+
+Congratulations! You have been shortlisted for the next stage of the hiring process.
+
+Best regards,
+HR Team"""
+)
+
+reject_subject = st.text_input("Rejection Email Subject","Application Update")
+
+reject_body = st.text_area(
+"Rejection Email Message",
+"""Hello {name},
+
+Thank you for applying.
+
+After reviewing your profile, we regret to inform you that you were not selected.
+
+Best regards,
+HR Team"""
+)
+
+# ---------------- EMAIL FUNCTION (NEW) ----------------
+
+def send_email(receiver_email, subject, body):
+
+    try:
+
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+
+        with smtplib.SMTP_SSL("smtp.gmail.com",465) as server:
+            server.login(sender_email,sender_password)
+            server.send_message(msg)
+
+        return True
+
+    except Exception as e:
+        st.error(f"Email error: {e}")
+        return False
 
 # ---------------- TEXT EXTRACTION ----------------
 
@@ -402,6 +454,36 @@ if "results" in st.session_state:
                 f,
                 file_name="shortlisted_resumes.pdf"
             )
+
+    # ---------------- SEND EMAIL BUTTON (NEW) ----------------
+
+    if st.button("Send Email Notifications"):
+
+        sent = 0
+
+        for _,row in df.iterrows():
+
+            name = row["Candidate Name"]
+            email = row["Email"]
+            score = row["Score"]
+
+            if email == "Not detected":
+                continue
+
+            if score >= threshold:
+
+                subject = shortlist_subject
+                body = shortlist_body.format(name=name)
+
+            else:
+
+                subject = reject_subject
+                body = reject_body.format(name=name)
+
+            if send_email(email,subject,body):
+                sent += 1
+
+        st.success(f"{sent} emails sent successfully")
 
     st.subheader("Candidate Profiles")
 
