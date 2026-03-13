@@ -185,38 +185,6 @@ uploaded_files = st.file_uploader(
 
 threshold = st.slider("Shortlist Threshold (%)",0,100,50)
 
-# ---------------- EMAIL SETTINGS ----------------
-
-st.subheader("Email Notification Settings")
-
-sender_email = st.text_input("Sender Email")
-sender_password = st.text_input("Email App Password", type="password")
-
-shortlist_subject = st.text_input("Shortlist Email Subject","Interview Shortlist Notification")
-
-shortlist_body = st.text_area(
-"Shortlist Email Message",
-"""Hello {name},
-
-Congratulations! You have been shortlisted for the next stage of the hiring process.
-
-Best regards,
-HR Team"""
-)
-
-reject_subject = st.text_input("Rejection Email Subject","Application Update")
-
-reject_body = st.text_area(
-"Rejection Email Message",
-"""Hello {name},
-
-Thank you for applying.
-
-After reviewing your profile, we regret to inform you that you were not selected.
-
-Best regards,
-HR Team"""
-)
 
 # ---------------- TEXT EXTRACTION ----------------
 
@@ -469,6 +437,40 @@ def send_email(receiver_email, subject, body):
     except Exception as e:
         st.error(f"Email error: {e}")
         return False
+    
+# ---------------- EMAIL SETTINGS ----------------
+
+st.subheader("Email Notification Settings")
+
+sender_email = st.text_input("Sender Email")
+sender_password = st.text_input("Email App Password", type="password")
+
+shortlist_subject = st.text_input("Shortlist Email Subject","Interview Shortlist Notification")
+
+shortlist_body = st.text_area(
+"Shortlist Email Message",
+"""Hello {name},
+
+Congratulations! You have been shortlisted for the next stage of the hiring process.
+
+Best regards,
+HR Team"""
+)
+
+reject_subject = st.text_input("Rejection Email Subject","Application Update")
+
+reject_body = st.text_area(
+"Rejection Email Message",
+"""Hello {name},
+
+Thank you for applying.
+
+After reviewing your profile, we regret to inform you that you were not selected.
+
+Best regards,
+HR Team"""
+)
+
 # ---------------- EMAIL SECTION (AT END) ----------------
 
 st.subheader("Send Candidate Email Notifications")
