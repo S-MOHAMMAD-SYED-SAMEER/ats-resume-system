@@ -60,8 +60,6 @@ with st.sidebar:
         st.session_state.logged_in = False
         st.rerun()
 
-    # ---------------- LOGO SETTINGS ----------------
-
     st.markdown("### Organization Logo")
 
     show_logo = st.checkbox("Show Logo", value=True)
@@ -72,10 +70,8 @@ with st.sidebar:
     )
 
     if logo_upload:
-
         with open("logo/client_logo.jpeg","wb") as f:
             f.write(logo_upload.getbuffer())
-
         st.success("Logo Updated")
 
 # ---------------- ADMIN PANEL ----------------
@@ -187,9 +183,9 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
-threshold = st.slider("Shortlist Threshold (%)",0,100,60)
+threshold = st.slider("Shortlist Threshold (%)",0,100,50)
 
-# ---------------- EMAIL SETTINGS (NEW) ----------------
+# ---------------- EMAIL SETTINGS ----------------
 
 st.subheader("Email Notification Settings")
 
@@ -222,7 +218,7 @@ Best regards,
 HR Team"""
 )
 
-# ---------------- EMAIL FUNCTION (NEW) ----------------
+# ---------------- EMAIL FUNCTION ----------------
 
 def send_email(receiver_email, subject, body):
 
@@ -316,22 +312,20 @@ def clean_words(text):
 
     return words
 
+# ---------------- ACCENTURE STYLE SCORING ----------------
 
-def analyze_resume(resume_text, job_description):
+def analyze_resume(resume_text,job_description):
 
-    # ---------- Semantic Similarity ----------
-    docs = [job_description, resume_text]
+    docs = [job_description,resume_text]
 
     vectorizer = TfidfVectorizer()
 
     tfidf = vectorizer.fit_transform(docs)
 
-    similarity = cosine_similarity(tfidf[0:1], tfidf[1:2])
+    similarity = cosine_similarity(tfidf[0:1],tfidf[1:2])
 
     semantic_score = similarity[0][0] * 100
 
-
-    # ---------- Keyword Matching ----------
     jd_words = set(clean_words(job_description))
     resume_words = set(clean_words(resume_text))
 
@@ -342,11 +336,9 @@ def analyze_resume(resume_text, job_description):
     else:
         keyword_score = (len(matched) / len(jd_words)) * 100
 
-
-    # ---------- Final Combined Score ----------
     score = int((semantic_score * 0.5) + (keyword_score * 0.5))
 
-    return score, matched[:10]
+    return score,matched[:10]
 
 # ---------------- REPORT ----------------
 
@@ -467,7 +459,24 @@ if "results" in st.session_state:
                 file_name="shortlisted_resumes.pdf"
             )
 
-    # ---------------- SEND EMAIL BUTTON (NEW) ----------------
+    st.subheader("Candidate Profiles")
+
+    for _,row in df.iterrows():
+
+        with st.expander(f"{row['Candidate Name']} | Score {row['Score']}%"):
+
+            st.write("Email:",row["Email"])
+            st.write("Phone:",row["Phone"])
+            st.write("Experience:",row["Experience"])
+            st.write("Matched Skills:",row["Matched Skills"])
+
+# ---------------- EMAIL SECTION (AT END) ----------------
+
+st.subheader("Send Candidate Email Notifications")
+
+if "results" in st.session_state:
+
+    df = st.session_state.results
 
     if st.button("Send Email Notifications"):
 
@@ -496,14 +505,3 @@ if "results" in st.session_state:
                 sent += 1
 
         st.success(f"{sent} emails sent successfully")
-
-    st.subheader("Candidate Profiles")
-
-    for _,row in df.iterrows():
-
-        with st.expander(f"{row['Candidate Name']} | Score {row['Score']}%"):
-
-            st.write("Email:",row["Email"])
-            st.write("Phone:",row["Phone"])
-            st.write("Experience:",row["Experience"])
-            st.write("Matched Skills:",row["Matched Skills"])
